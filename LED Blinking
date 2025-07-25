@@ -1,0 +1,32 @@
+#include <stdint.h>
+#include <stdbool.h>
+#include "inc/hw_memmap.h"
+#include "driverlib/sysctl.h"
+#include "driverlib/gpio.h"
+
+int main(void)
+{
+    // Set system clock to 50MHz using PLL and 16MHz crystal
+    SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL |
+                   SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
+
+    // Enable GPIOA peripheral
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
+    while(!SysCtlPeripheralReady(SYSCTL_PERIPH_GPIOA)) {}
+
+    // Configure PA4 and PA3 as output (LED1 and LED2)
+    GPIOPinTypeGPIOOutput(GPIO_PORTA_BASE, GPIO_PIN_4 | GPIO_PIN_3);
+
+    while(1)
+    {
+        // Turn ON LED1 (PA4), OFF LED2 (PA3)
+        GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_4, GPIO_PIN_4);
+        GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_3, 0x00);
+        SysCtlDelay(SysCtlClockGet() / 3);  // 1 second delay
+
+        // Turn ON LED2 (PA3), OFF LED1 (PA4)
+        GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_4, 0x00);
+        GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_3, GPIO_PIN_3);
+        SysCtlDelay(SysCtlClockGet() / 3);  // 1 second delay
+    }
+}
